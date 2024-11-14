@@ -1,0 +1,208 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta http-equiv="X-UA-Compatible" content="ie=edge">
+    <title>Forum Diskusi</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 0;
+            padding: 0;
+            background-color: #f4f4f4;
+        }
+
+        header {
+            background-color: #333;
+            color: white;
+            padding: 10px 20px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        header .logo h1 {
+            margin: 0;
+        }
+
+        nav ul {
+            display: flex;
+            list-style: none;
+        }
+
+        nav ul li {
+            margin-left: 20px;
+        }
+
+        nav ul li a {
+            color: white;
+            text-decoration: none;
+        }
+
+        section {
+            padding: 20px;
+        }
+
+        button {
+            background-color: #4CAF50;
+            color: white;
+            border: none;
+            padding: 10px;
+            cursor: pointer;
+        }
+
+        button:hover {
+            background-color: #45a049;
+        }
+
+        input {
+            margin: 10px 0;
+            padding: 10px;
+            width: 100%;
+            border: 1px solid #ccc;
+            border-radius: 5px;
+        }
+
+        #posts-list .post {
+            background-color: white;
+            padding: 15px;
+            margin-bottom: 10px;
+            border-radius: 5px;
+            box-shadow: 0 0 5px rgba(0, 0, 0, 0.1);
+        }
+
+        #posts-list .post button {
+            margin-top: 10px;
+        }
+
+        footer {
+            background-color: #333;
+            color: white;
+            text-align: center;
+            padding: 10px;
+            position: fixed;
+            bottom: 0;
+            width: 100%;
+        }
+
+        #logout-btn {
+            background-color: #f44336;
+            border: none;
+            padding: 10px;
+            cursor: pointer;
+        }
+
+        #logout-btn:hover {
+            background-color: #e53935;
+        }
+    </style>
+</head>
+<body>
+
+    <header>
+        <div class="logo">
+            <h1>Forum Diskusi</h1>
+        </div>
+        <nav>
+            <ul>
+                <li><a href="index.html">Home</a></li>
+                <li><a href="login.html">Login</a></li>
+                <li><a href="register.html">Register</a></li>
+            </ul>
+        </nav>
+    </header>
+
+    <section id="forum-section">
+        <h2>Forum</h2>
+        <div id="user-welcome"></div>  <!-- Menampilkan salam selamat datang dengan username -->
+        <button id="btn-new-post">Buat Postingan Baru</button>
+        <button id="logout-btn" style="display: none;">Logout</button>
+
+        <!-- List Postingan -->
+        <div id="posts-list"></div>
+    </section>
+
+    <footer>
+        <p>&copy; 2024 Forum Diskusi. All rights reserved.</p>
+    </footer>
+
+    <script>
+        // Fungsi untuk memuat postingan dari localStorage
+        function loadPosts() {
+            const posts = JSON.parse(localStorage.getItem('posts')) || [];
+            const postsList = document.getElementById('posts-list');
+
+            postsList.innerHTML = posts.map(post => `
+                <div class="post">
+                    <h3>${post.title}</h3>
+                    <p>${post.content}</p>
+                    <button onclick="commentPost('${post.id}')">Komentar</button>
+                    <div class="comments">${post.comments.join('<br>')}</div>
+                </div>
+            `).join('');
+        }
+
+        // Tampilkan daftar posting di halaman forum
+        window.addEventListener('load', function () {
+            // Memuat postingan
+            loadPosts();
+
+            // Ambil data user yang sedang login
+            const currentUser = localStorage.getItem('currentUser');
+            if (currentUser) {
+                // Tampilkan nama pengguna yang sedang login
+                document.getElementById('user-welcome').innerHTML = `
+                    <h3>Selamat datang, ${currentUser}!</h3>
+                `;
+
+                // Menampilkan tombol logout
+                document.getElementById('logout-btn').style.display = 'inline-block';
+
+                // Tombol logout
+                document.getElementById('logout-btn').addEventListener('click', function() {
+                    localStorage.removeItem('currentUser');  // Hapus user yang sedang login
+                    alert('Anda telah logout');
+                    window.location.href = 'login.html';  // Arahkan ke halaman login
+                });
+
+            } else {
+                window.location.href = 'login.html';  // Jika tidak ada user yang login, arahkan ke login
+            }
+
+            // Buat Postingan Baru
+            document.getElementById('btn-new-post').addEventListener('click', function () {
+                const title = prompt("Masukkan judul postingan:");
+                const content = prompt("Masukkan konten postingan:");
+                const posts = JSON.parse(localStorage.getItem('posts')) || [];
+
+                const newPost = {
+                    id: Date.now().toString(),
+                    title: title,
+                    content: content,
+                    comments: []
+                };
+
+                posts.push(newPost);
+                localStorage.setItem('posts', JSON.stringify(posts));
+                loadPosts();
+            });
+        });
+
+        // Fungsi untuk menambah komentar
+        function commentPost(postId) {
+            const comment = prompt("Tulis komentar:");
+            if (comment) {
+                const posts = JSON.parse(localStorage.getItem('posts')) || [];
+                const post = posts.find(p => p.id === postId);
+                if (post) {
+                    post.comments.push(comment);
+                    localStorage.setItem('posts', JSON.stringify(posts));
+                    loadPosts();
+                }
+            }
+        }
+    </script>
+
+</body>
+</html>
